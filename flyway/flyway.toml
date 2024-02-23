@@ -1,0 +1,27 @@
+databaseType = "MySql"
+name = "flyway"
+id = "bf6b4624-34a5-4199-b89b-7d3d377314e7"
+
+[flywayDesktop]
+developmentEnvironment = "development"
+shadowEnvironment = "shadow"
+schemaModel = "./schema-model"
+
+[redgateCompare]
+filterFile = "filter.rgf"
+
+[redgateCompare.mysql.options.ignores]
+ignoreNewlinesInTextObjects = "off"
+
+[flyway]
+mixed = true
+outOfOrder = true
+locations = [ "filesystem:migrations" ]
+validateMigrationNaming = true
+
+  [flyway.check]
+  majorTolerance = 0
+
+[environments.target1]
+url = "jdbc:mysql://localhost"
+schemas = [ "BellaFiore" ]
