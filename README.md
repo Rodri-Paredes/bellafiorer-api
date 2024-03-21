@@ -15,3 +15,6 @@ To apply all migrations, run the following command:
 flyway migrate -url="jdbc:mysql://localhost:3306/bellafiore" -user="root" -password="****"
 
 Replace **** with your MySQL database password. This command will execute all pending migrations against the specified database URL.
+
+### Run Project 
+```uvicorn main:app --reload ```

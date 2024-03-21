@@ -38,8 +38,6 @@ CREATE TABLE usuario (
 );
 CREATE TABLE orden (
     id_orden INT PRIMARY KEY AUTO_INCREMENT,
-    fecha_entrega DATETIME,
-    monto_pagado FLOAT(7,2) NOT NULL DEFAULT 0,
     monto_total FLOAT(7,2) NOT NULL DEFAULT 0,
     estado ENUM("pedido","reserva","vendido","cancelado"),
     id_usuario INT,
@@ -67,3 +65,26 @@ CREATE TABLE detalle (
     FOREIGN KEY (id_orden) REFERENCES orden(id_orden),
     FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
 )
+CREATE TABLE orden_cancelado (
+    id_orden INT PRIMARY KEY,
+    motivo_cancelacion VARCHAR(50),
+    FOREIGN KEY (id_orden) REFERENCES orden(id_orden)
+);
+CREATE TABLE orden_pedido (
+    id_orden  INT PRIMARY KEY,
+    fecha_entrega DATETIME,
+    FOREIGN KEY (id_orden) REFERENCES orden(id_orden)
+);
+CREATE TABLE orden_reserva (
+    id_orden INT  PRIMARY KEY,
+     monto_pagado float(7,2) NOT NULL DEFAULT 0,
+     metodo_pago ENUM('EFECTIVO', 'QR', 'TRANSFERENCIA'),
+    FOREIGN KEY (id_orden) REFERENCES orden(id_orden)
+);
+CREATE TABLE orden_vendido (
+    id_orden INT   PRIMARY KEY,
+    fecha_venta  TIMESTAMP  DEFAULT CURRENT_TIMESTAMP,
+    saldo_cancelado float(7,2) NOT NULL DEFAULT 0,
+    metodo_pago ENUM('EFECTIVO', 'QR', 'TRANSFERENCIA'),
+    FOREIGN KEY (id_orden) REFERENCES orden(id_orden)
+);
