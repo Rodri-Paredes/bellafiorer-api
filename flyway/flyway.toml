@@ -25,3 +25,7 @@ validateMigrationNaming = true
 [environments.target1]
 url = "jdbc:mysql://localhost"
 schemas = [ "BellaFiore" ]
+
+[environments.target2]
+url = "jdbc:mysql://localhost:3306"
+schemas = [ "bellafiore" ]

@@ -27,7 +27,7 @@ CREATE TABLE producto (
 CREATE TABLE usuario (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(20),
-    nombre_usuario VARCHAR(20) UNIQUE,
+    username VARCHAR(20) UNIQUE,
     password VARCHAR(50),
     rol ENUM ("admin","vendedor"),
     creado_por INT NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE detalle (
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_orden) REFERENCES orden(id_orden),
     FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
-)
+);
 CREATE TABLE orden_cancelado (
     id_orden INT PRIMARY KEY,
     motivo_cancelacion VARCHAR(50),
