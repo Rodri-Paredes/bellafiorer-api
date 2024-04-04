@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import products
+from routers import productos
 
 app = FastAPI()
-app.include_router(products.router, prefix="/api")
+app.include_router(productos.router, prefix="/api")
