@@ -6,6 +6,7 @@ import os
 import hashlib
 from dotenv import load_dotenv
 from datetime import datetime
+from services import usuarios_service
 
 router = APIRouter()
 
@@ -34,17 +35,11 @@ def get_users():
 
 @router.get("/usuarios/{id_usuario}", response_model=Usuario)
 def get_userby_id(id_usuario: int):
-    conn = pool.connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id_usuario, nombre, username, password, rol, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM usuario WHERE id_usuario = %s", (id_usuario,))
-        data = cursor.fetchone()
-        if data:
-            return Usuario(id_usuario=data[0], nombre=data[1], username=data[2], password=data[3], rol=data[4], creado_por=data[5], actualizado_por=data[6], ultima_actualizacion=data[7], es_activo=data[8], fecha_creacion=data[9])
-        else:
-            raise HTTPException(status_code=404, detail="User not found")
-    finally:
-        conn.close()
+    result = usuarios_service.find_usuario_by_id(id_usuario)
+    if result is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    else:
+        return result
 
 def encrypt_password(password : str):
     if password:

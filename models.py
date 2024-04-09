@@ -66,8 +66,8 @@ class Orden(BaseModel):
     id_orden: Optional[int] = None
     monto_total: float
     estado: OrdenEstado
-    usuario: Optional[Usuario] = None
-    cliente: Optional[Cliente] = None
+    usuario: Usuario
+    cliente: Cliente
     detalles: List[Detalle] = []
     creado_por: Optional[int] = None
     actualizado_por: Optional[int] = None
