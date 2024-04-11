@@ -25,6 +25,7 @@ def find_orderpedido_by_id(id_orden: int):
 
 def create_orderpedido(order_pedido: OrdenPedido):
     conn = get_db_connection()
+
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -33,12 +34,20 @@ def create_orderpedido(order_pedido: OrdenPedido):
         )
         conn.commit()
         id_orden = cursor.lastrowid
+
+        for detalle in order_pedido.detalles:
+            cursor.execute(
+                "INSERT INTO detalle (id_orden, id_producto, cantidad, precio_unitario, subtotal, creado_por) VALUES (%s, %s, %s, %s, %s,%s)",
+                (id_orden, detalle.producto.id_producto, detalle.cantidad, detalle.precio_unitario, detalle.subtotal, detalle.creado_por)
+            )
+        conn.commit()
         
         cursor.execute(
             "INSERT INTO orden_pedido (id_orden, fecha_entrega) VALUES (%s, %s)",
             (id_orden, order_pedido.fecha_entrega)
         )
         conn.commit()
+
     finally:
         conn.close()
         
