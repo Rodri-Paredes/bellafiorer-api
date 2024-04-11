@@ -1,29 +1,15 @@
 from fastapi import APIRouter, HTTPException
 from models import Usuario
-from dbutils.pooled_db import PooledDB
-import MySQLdb
-import os
 import hashlib
-from dotenv import load_dotenv
 from datetime import datetime
 from services import usuarios_service
+from database import get_db_connection
 
 router = APIRouter()
 
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
-
-@router.get("/usuarios", response_model=list[Usuario])
+@router.get("/usuarios", response_model=list[Usuario],tags=["usuarios"])
 def get_users():
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_usuario, nombre, username, password, rol, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM usuario")
@@ -33,7 +19,7 @@ def get_users():
     finally:
         conn.close()
 
-@router.get("/usuarios/{id_usuario}", response_model=Usuario)
+@router.get("/usuarios/{id_usuario}", response_model=Usuario,tags=["usuarios"])
 def get_userby_id(id_usuario: int):
     result = usuarios_service.find_usuario_by_id(id_usuario)
     if result is None:
@@ -48,9 +34,9 @@ def encrypt_password(password : str):
         password = hashed_password
     return password.hexdigest()
 
-@router.post("/usuarios", response_model=Usuario)
+@router.post("/usuarios", response_model=Usuario,tags=["usuarios"])
 def create_user(usuario: Usuario):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         usuario.password = encrypt_password(usuario.password)
         cursor = conn.cursor()
@@ -64,9 +50,9 @@ def create_user(usuario: Usuario):
         conn.close()
     return Usuario(id_usuario=id_usuario, nombre=usuario.nombre, username=usuario.username, password=usuario.password, rol=usuario.rol, creado_por=usuario.creado_por, actualizado_por=usuario.actualizado_por, ultima_actualizacion=usuario.ultima_actualizacion, es_activo=usuario.es_activo, fecha_creacion=usuario.fecha_creacion)
 
-@router.put("/usuarios/{id_usuario}", response_model=Usuario)
+@router.put("/usuarios/{id_usuario}", response_model=Usuario,tags=["usuarios"])
 def update_user(id_usuario: int, updated_user: Usuario):
-    conn = pool.connection()
+    conn = get_db_connection()
 
     try:
         updated_user.password = encrypt_password(updated_user.password)
@@ -83,9 +69,9 @@ def update_user(id_usuario: int, updated_user: Usuario):
     finally:
         cursor.close()
 
-@router.delete("/usuarios/{id_usuario}")
+@router.delete("/usuarios/{id_usuario}",tags=["usuarios"])
 def delete_user(id_usuario: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))

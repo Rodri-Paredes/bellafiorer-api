@@ -1,24 +1,8 @@
-from dbutils.pooled_db import PooledDB
-from dotenv import load_dotenv
-import MySQLdb
-import os
 from models import Usuario
-
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
-
-
+from database import get_db_connection
 
 def find_usuario_by_id(id_usuario: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_usuario, nombre, username, password, rol, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM usuario WHERE id_usuario = %s", (id_usuario,))

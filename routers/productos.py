@@ -1,30 +1,17 @@
 from fastapi import APIRouter,HTTPException
 from models import Producto
-from dbutils.pooled_db import PooledDB
-import MySQLdb
-import os
-from dotenv import load_dotenv
 from datetime import datetime
+from database import get_db_connection
+
 router = APIRouter()
-
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
 
 @router.get("/")
 def read_root():
     return {"message": "hola mundo"}
 
-@router.get("/productos", response_model=list[Producto])
+@router.get("/productos", response_model=list[Producto],tags=["productos"])
 def get_product():
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_producto,nombre, descripcion, precio, stock,creado_por,actualizado_por,ultima_actualizacion, es_activo,fecha_creacion FROM producto")
@@ -34,13 +21,13 @@ def get_product():
     finally:
         conn.close()
 
-@router.get("/productos", response_model=Producto)
+@router.get("/productos", response_model=Producto,tags=["productos"])
 def get_product():
     return {"message": "Este es el get de los productos"}
 
-@router.get("/productos/{id_producto}", response_model=Producto)
+@router.get("/productos/{id_producto}", response_model=Producto,tags=["productos"])
 def get_product_by_id(id_producto: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_producto, nombre, descripcion, precio, stock, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM producto WHERE id_producto = %s", (id_producto,))
@@ -52,9 +39,9 @@ def get_product_by_id(id_producto: int):
     finally:
         conn.close()
 
-@router.post("/productos", response_model=Producto)
+@router.post("/productos", response_model=Producto,tags=["productos"])
 def create_product(producto: Producto):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -67,9 +54,9 @@ def create_product(producto: Producto):
         conn.close()
     return Producto(id_producto=id_producto, nombre=producto.nombre, descripcion=producto.descripcion, precio=producto.precio, stock=producto.stock, creado_por=producto.creado_por, actualizado_por=producto.actualizado_por, ultima_actualizacion=producto.ultima_actualizacion, es_activo=producto.es_activo, fecha_creacion=producto.fecha_creacion)
 
-@router.put("/productos/{id_producto}", response_model=Producto)
+@router.put("/productos/{id_producto}", response_model=Producto,tags=["productos"])
 def put_product(id_producto: int, updated_product: Producto):
-    conn = pool.connection()
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -85,9 +72,9 @@ def put_product(id_producto: int, updated_product: Producto):
     finally:
         cursor.close()
 
-@router.delete("/productos/{id_producto}")
+@router.delete("/productos/{id_producto}",tags=["productos"])
 def delete_product(id_producto: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM producto WHERE id_producto = %s", (id_producto,))

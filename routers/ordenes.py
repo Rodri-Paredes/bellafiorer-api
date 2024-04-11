@@ -1,27 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from models import Orden
-from dbutils.pooled_db import PooledDB
-import MySQLdb
-import os
-from dotenv import load_dotenv
 from datetime import datetime
+from database import get_db_connection
 
 router = APIRouter()
 
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
-
-@router.get("/ordenes", response_model=list[Orden])
+@router.get("/ordenes", response_model=list[Orden],tags=["ordenes"])
 def get_orders():
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_orden, monto_total, estado, id_usuario, id_cliente, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM orden")
@@ -31,9 +17,9 @@ def get_orders():
     finally:
         conn.close()
 
-@router.get("/ordenes/{id_orden}", response_model=Orden)
+@router.get("/ordenes/{id_orden}", response_model=Orden,tags=["ordenes"])
 def get_orderby_id(id_orden: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_orden, monto_total, estado, id_usuario, id_cliente, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM orden WHERE id_orden = %s", (id_orden,))
@@ -45,9 +31,9 @@ def get_orderby_id(id_orden: int):
     finally:
         conn.close()
 
-@router.post("/ordenes", response_model=Orden)
+@router.post("/ordenes", response_model=Orden,tags=["ordenes"])
 def create_order(order: Orden):  
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -61,9 +47,9 @@ def create_order(order: Orden):
         conn.close()
 
 
-@router.put("/ordenes/{id_orden}", response_model=Orden)
+@router.put("/ordenes/{id_orden}", response_model=Orden,tags=["ordenes"])
 def update_order(id_orden: int, updated_order: Orden):
-    conn = pool.connection()
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -79,9 +65,9 @@ def update_order(id_orden: int, updated_order: Orden):
     finally:
         cursor.close()
 
-@router.delete("/ordenes/{id_orden}")
+@router.delete("/ordenes/{id_orden}",tags=["ordenes"])
 def delete_order(id_orden: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM orden WHERE id_orden = %s", (id_orden,))

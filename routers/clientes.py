@@ -1,28 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from models import Cliente
-from dbutils.pooled_db import PooledDB
-import MySQLdb
-import os
-from dotenv import load_dotenv
 from datetime import datetime
 from services import clientes_service
+from database import get_db_connection
 
 router = APIRouter()
 
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
-
-@router.get("/clientes", response_model=list[Cliente])
+@router.get("/clientes", response_model=list[Cliente],tags=["clientes"])
 def get_clientes():
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id_cliente, nombre, direccion, celular, email, creado_por, actualizado_por, ultima_actualizacion, es_activo, fecha_creacion FROM cliente")
@@ -32,7 +18,7 @@ def get_clientes():
     finally:
         conn.close()
 
-@router.get("/clientes/{id_cliente}", response_model=Cliente)
+@router.get("/clientes/{id_cliente}", response_model=Cliente,tags=["clientes"])
 def get_cliente_by_id(id_cliente: int):
     result = clientes_service.find_cliente_by_id(id_cliente)
     if result is None:
@@ -41,9 +27,9 @@ def get_cliente_by_id(id_cliente: int):
         return result
 
 
-@router.post("/clientes", response_model=Cliente)
+@router.post("/clientes", response_model=Cliente,tags=["clientes"])
 def create_cliente(cliente: Cliente):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -56,9 +42,9 @@ def create_cliente(cliente: Cliente):
         conn.close()
     return Cliente(id_cliente=id_cliente, nombre=cliente.nombre, direccion=cliente.direccion, celular=cliente.celular, email=cliente.email, creado_por=cliente.creado_por, actualizado_por=cliente.actualizado_por, ultima_actualizacion=cliente.ultima_actualizacion, es_activo=cliente.es_activo, fecha_creacion=cliente.fecha_creacion)
 
-@router.put("/clientes/{id_cliente}", response_model=Cliente)
+@router.put("/clientes/{id_cliente}", response_model=Cliente,tags=["clientes"])
 def put_cliente(id_cliente: int, updated_cliente: Cliente):
-    conn = pool.connection()
+    conn = get_db_connection()
 
     try:
         cursor = conn.cursor()
@@ -75,9 +61,9 @@ def put_cliente(id_cliente: int, updated_cliente: Cliente):
         cursor.close()
 
 
-@router.delete("/clientes/{id_cliente}")
+@router.delete("/clientes/{id_cliente}",tags=["clientes"])
 def delete_cliente(id_cliente: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM cliente WHERE id_cliente = %s", (id_cliente,))

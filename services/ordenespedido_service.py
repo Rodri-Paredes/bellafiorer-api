@@ -1,25 +1,10 @@
-from dbutils.pooled_db import PooledDB
-from dotenv import load_dotenv
-import MySQLdb
-import os
 from models import OrdenPedido
 from services import usuarios_service, clientes_service
-
-
-load_dotenv()
-
-db_config = {
-    'host': os.getenv("DB_HOST"),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_DATABASE"),
-}
-
-pool = PooledDB(MySQLdb, 5, **db_config)
-
+from database import get_db_connection
+from datetime import datetime
 
 def find_orderpedido_by_id(id_orden: int):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -38,9 +23,8 @@ def find_orderpedido_by_id(id_orden: int):
     finally:
         conn.close()
 
-
 def create_orderpedido(order_pedido: OrdenPedido):
-    conn = pool.connection()
+    conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -59,3 +43,38 @@ def create_orderpedido(order_pedido: OrdenPedido):
         conn.close()
         
     return order_pedido
+
+def update_orderpedido(id_orden: int, updated_order: OrdenPedido):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        updated_order.ultima_actualizacion = datetime.now()
+        cursor.execute(
+            "UPDATE orden SET monto_total=%s, estado=%s, id_usuario=%s, id_cliente=%s, creado_por=%s, actualizado_por=%s, ultima_actualizacion=%s, es_activo=%s, fecha_creacion=%s WHERE id_orden=%s",
+            (updated_order.monto_total, updated_order.estado, updated_order.usuario.id_usuario, updated_order.cliente.id_cliente, updated_order.creado_por, updated_order.actualizado_por, updated_order.ultima_actualizacion, updated_order.es_activo, updated_order.fecha_creacion, id_orden)
+        )
+        cursor.execute(
+            "UPDATE orden_pedido SET fecha_entrega=%s WHERE id_orden=%s",
+            (updated_order.fecha_entrega, id_orden)
+        )
+        conn.commit()
+        return updated_order
+    finally:
+        conn.close()
+
+
+def delete_orderpedido(id_orden: int):
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM orden_pedido WHERE id_orden = %s",
+            (id_orden,)
+        )
+        cursor.execute(
+            "DELETE FROM orden WHERE id_orden = %s",
+            (id_orden,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
