@@ -17,6 +17,13 @@ def get_orderpedidoby_id(id_orden: int):
     else:
         return result
 
+@router.get("/ordenespedido", response_model=list[OrdenPedido],tags=["ordenespedido"])
+def get_all_order_pedidos():
+    result = ordenespedido_service.get_all_orderpedidos()
+    if result is None:
+        raise HTTPException(status_code=404, detail="Orden not found")
+    else:
+        return result
 
 @router.put("/ordenespedido/{id_orden}", response_model=OrdenPedido,tags=["ordenespedido"])
 def put_orderpedido_by_id(id_orden: int, updated_order: OrdenPedido):

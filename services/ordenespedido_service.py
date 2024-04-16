@@ -23,6 +23,25 @@ def find_orderpedido_by_id(id_orden: int):
     finally:
         conn.close()
 
+def get_all_orderpedidos():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT o.id_orden, o.monto_total, o.estado, o.id_usuario, o.id_cliente, o.creado_por, o.actualizado_por, o.ultima_actualizacion, o.es_activo, o.fecha_creacion, op.fecha_entrega FROM orden o INNER JOIN orden_pedido OP ON o.id_orden = OP.id_orden"
+        )
+        data = cursor.fetchall()
+        result = []
+        for row in data:
+            usuario_id = row[3]
+            usuario = usuarios_service.find_usuario_by_id(usuario_id)
+            cliente_id = row[4]
+            cliente = clientes_service.find_cliente_by_id(cliente_id)
+            result.append(OrdenPedido(id_orden=row[0], monto_total=row[1], estado=row[2], usuario=usuario, cliente=cliente, creado_por=row[5], actualizado_por=row[6], ultima_actualizacion=row[7], es_activo=row[8], fecha_creacion=row[9], fecha_entrega=row[10]))
+        return result
+    finally:
+        conn.close()
+
 def create_orderpedido(order_pedido: OrdenPedido):
     conn = get_db_connection()
 
